@@ -1,0 +1,13 @@
+#!/bin/bash
+
+POL_WineBuild_appendGecko()
+{
+	cVer="$1"
+	if ! grep -q "^$cVer;" $gecko_file; then GECKO="`cat $gecko_current`";  echo "$cVer;$GECKO" >> $gecko_file; fi
+}
+
+POL_WineBuild_appendMono()
+{
+	cVer="$1"
+	if ! grep -q "^$cVer;" $mono_file; then MONO="`cat $mono_current`";  echo "$cVer;$MONO" >> $mono_file; fi
+}

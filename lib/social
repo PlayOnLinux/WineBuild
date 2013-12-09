@@ -1,0 +1,95 @@
+#!/bin/bash
+
+function sendMsg
+{
+	if [ ! "$wb_patching" = "true" ]; then
+		message="You can read release note here: [url]http://www.playonlinux.com/w/$1[/url]"
+	fi
+
+	sleep 2
+}
+
+addToNews()
+{
+	if [ ! -e "/tmp/wine_news" ]; then
+		newsHeader "$1"
+	fi
+	echo "$2" >> /tmp/wine_news
+}
+cdate()
+{
+	date -R	
+}
+newsHeader()
+{
+	if [ ! "$wb_patching" = "true" ]; then
+                wget "http://www.playonlinux.com/wine/version.php?version=$1&write=true" -O- -q  > /dev/null
+                message="
+You can read release note here: [url]http://www.playonlinux.com/w/$1[/url]
+"
+
+                message_fr="
+Vous pouvez lire des informations à propos de cette version ici : [url]http://www.playonlinux.com/w/$1[/url]
+"
+
+     fi
+	echo "Wine ${1:5} is available!" > /tmp/wine_title
+	cat << EOF > /tmp/wine_news
+[flottante=left][img]http://www.playonlinux.com/images/uploads/199.jpg[/img][/flottante]Wine ${1:5} is now available into PlayOnLinux and PlayOnMac!
+$message
+Here are some information about the build :
+
+EOF
+
+	echo "Wine ${1:5} est disponible !" > /tmp/wine_title_fr
+	cat << EOF > /tmp/wine_news_fr
+[flottante=left][img]http://www.playonlinux.com/images/uploads/199.jpg[/img][/flottante]Wine ${1:5} est maintenant disponible dans PlayOnLinux et  PlayOnMac !
+$message_fr
+Voici quelques informations à propos de la compilation (en anglais) :
+
+EOF
+
+}
+sendNews()
+{
+
+if [ ! "$wb_patching" = "true" ]; then
+	if [ -e "/tmp/wine_news" ]; then
+		cat << EOF >> /tmp/wine_news
+	
+Wine builds are synchronised with PlayOnLinux and PlayOnMac wine versions manager every half hour. 
+You can read the building log here and download the packages here: [url]http://www.playonlinux.com/wine/[/url]
+EOF
+
+wget --load-cookies "$POL_COOKIES_FILE" --post-data="submit=add&langue=en&titre=$(cat /tmp/wine_title)&message=$(cat /tmp/wine_news)" "http://www.playonlinux.com/admin/addnews.php" -q -O-
+
+		rm /tmp/wine_news
+		rm /tmp/wine_title
+	fi
+	
+	if [ -e "/tmp/wine_news_fr" ]; then
+		cat << EOF >> /tmp/wine_news_fr
+	
+Les binaires wine sont synchronisés avec le gestionnaire de version toutes les demi-heures. 
+Vous pouvez avoir des informations à propos des compilations sur la page suivante : [url]http://www.playonlinux.com/wine/[/url]
+EOF
+
+wget --load-cookies "$POL_COOKIES_FILE" --post-data="submit=add&langue=fr&titre=$(cat /tmp/wine_title_fr)&message=$(cat /tmp/wine_news_fr)" "http://www.playonlinux.com/admin/addnews.php" -q -O-
+
+		rm /tmp/wine_news_fr
+		rm /tmp/wine_title_fr
+	fi	
+	
+	
+fi
+}
+
+
+setState()
+{
+	[ "$3" = "" ] || patch="-$3"
+	cat <<EOF > $HOME/state
+	ARCH=$2
+	VERSION="$1$patch"
+EOF
+}

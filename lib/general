@@ -1,0 +1,60 @@
+#!/bin/bash
+
+POL_FunctionExists()
+{
+	#1 : Name of the function
+	type "$1" > /dev/null 2> /dev/null
+}
+
+
+POL_Start_Winebuild()
+{
+	# 1 : Architecture
+	if [ "$1" = "" ]; then
+		echo "POL_Start_Winebuild : You must choose an architecture"
+	fi
+	
+	
+	POL_WineBuild_GetTags | while read version
+	do
+		
+		[ -e "$BINARIES_DIR"/$1/PlayOnLinux-$version-$1.pol ] && continue
+		cVer=${version:5}
+		POL_WineBuild_appendGecko "$cVer"
+		POL_WineBuild_appendMono "$cVer"
+		
+		if [ "$(cat $HOME/ignore.lst | grep $version-$1)" = "" ]
+		then
+			notify "[Winebuild $1] Building wine $version"
+			sleep 2	
+			POL_WineBuilder_"$1" "$version" > "$LOG_DIR"/$1/$version-$1.log 2> "$LOG_DIR"/$1/$version-$1.err
+			notify "[Winebuild $1] Exit code : $?"
+			
+			POL_WineBuild_GeneralClean
+		fi
+	done
+	
+	
+	
+	while read line
+	do
+		version="$(echo $line | awk '{print $1}')"
+		patchname="$(echo $line | awk '{print $2}')"
+		[ -e  "$BINARIES_DIR"/$1/PlayOnLinux-$version-$patchname-$1.pol ] && continue
+		notify "[Winebuild $1] Building wine $version $patchname"
+		sleep 2	
+		POL_WineBuilder_"$1" "$version" "$patchname" > "$LOG_DIR"/$1/$version-$patchname-$1.log 2> "$LOG_DIR"/$1/$version-$patchname-$1.err
+		notify "[Winebuild $1] Exit code : $?"
+		
+		POL_WineBuild_GeneralClean
+
+	done < $HOME/wine-patches/custom/todo_$1.lst
+	
+}
+
+
+notify()
+{
+	# Send message to IRC
+	send-to-irc playonlinux-staff "$1"
+}

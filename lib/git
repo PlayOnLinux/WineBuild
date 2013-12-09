@@ -1,0 +1,169 @@
+#!/bin/bash
+
+POL_WineBuild_CleanGIT()
+{
+	# 1 : Git tree to clean
+	[ "$1" = "" ] && GIT="$WINE_GIT" || GIT="$1"
+	cd "$GIT" 
+	git clean -d -x -f
+	git reset --hard HEAD
+	git checkout -f master
+	git pull	
+}
+
+POL_WineBuild_CheckoutGIT()
+{
+	[ "$1" = "" ] && GIT="$WINE_GIT" || GIT="$1"
+	cd "$GIT"
+	git checkout -f "$2"
+}
+
+POL_WineBuild_GeneralClean()
+{
+	 POL_WineBuild_CleanGIT "$HOME/wine-git/"
+	 POL_WineBuild_CleanGIT "$HOME/wine-tools/"
+}
+
+POL_WineBuild_GetTags()
+{
+	cd "$WINE_GIT"
+	git tag | grep "wine-1.2"
+	git tag | grep "wine-1.3"
+	git tag | grep "wine-1.4"
+	git tag | grep "wine-1.5"
+	git tag | grep "wine-1.6"
+	git tag | grep "wine-1.7"
+}
+
+POL_WineBuild_applyPatch()
+{
+	# 1 : Git Dir
+	# 2 : Patch dir 
+	
+    cd "$1"
+
+    for file in "$2/"*".patch"
+    do
+        echo "[PATCH] Patching custom: $file"
+		if [ -e "$2/winebuild.cfg" ]; then
+			echo "Reading winebuild.cfg" 
+			level="$(cat "$2/winebuild.cfg" | grep patch_level | cut -d"=" -f2)"
+			[ "$level" = "" ] && level="1"
+	
+			if [ "$level" = "-1" ]; then
+				echo "[PATCH] level set to -1, using git apply"
+				git apply "$file"
+				patched="true"
+			else
+				echo "[PATCH] patch_level : $level"
+				patch -p$level < "$file" 
+				patched="true"
+			fi
+		else
+			echo "[PATCH] winebuild.cfg not found"
+		fi
+    done
+	
+    if [ -e "$2/commands.cfg" ]; then
+            echo "Running $2/commands.cfg"
+            bash $2/commands.cfg
+            echo "Done."
+    fi
+    if [ -e "$2/source.cfg" ]; then
+            echo "Source $2/source.cfg"
+            source $2/source.cfg
+            echo "Done."
+    fi
+	
+
+}
+POL_WineBuild_applyAllPatch()
+{
+	# 1 - Wineversion
+	# 2 - Patchname (ex: wine-1.3.25-patch)
+	# Si patchname n'est pas spécifié, alors patchname prend le nom de wineversion
+
+	patchName="$1"
+	customName="$2"
+
+	build_dir="$PATCHES_DIR/$3/$patchName"
+	all_dir="$PATCHES_DIR/$3/all"
+	custom_dir="$PATCHES_DIR/custom/$customName"
+
+	POL_WineBuild_applyPatch "$WINE_GIT" "$build_dir"
+	POL_WineBuild_applyPatch "$WINE_GIT" "$all_dir"
+	[ "$customName" = "" ] || POL_WineBuild_applyPatch "$WINE_GIT" "$custom_dir"
+	
+	POL_WineBuild_applyPatch "$WINE_TOOLS" "$build_dir"
+	POL_WineBuild_applyPatch "$WINE_TOOLS" "$all_dir"
+	[ "$customName" = "" 	] || POL_WineBuild_applyPatch "$WINE_TOOLS" "$custom_dir"
+	
+	return 0
+
+}
+
+
+POL_WineBuild_Package()
+{
+	arch="$3"
+	if [ "$2" != "" ]; then
+		buildName="$1-$2"
+	else
+		buildName="$1"
+	fi
+
+	cd "$INSTALL_DIR/$arch/$buildName/"
+
+	notify "[Winebuild $arch] Making package $buildName"
+	rm -rf wineversion/${buildName:5}/include/
+	find -type f -exec strip -s '{}' +
+	mkdir playonlinux files
+	cat <<EOF > playonlinux/main
+#!/bin/bash
+if [ "\$PLAYONLINUX" = "" ]
+then   
+        exit 0
+fi
+
+source "\$PLAYONLINUX/lib/sources" 
+
+cp -a \$SCRIPT_DIRECTORY/../wineversion/${buildName:5} \$REPERTOIRE/wine/$arch/${buildName:5}
+
+exit
+EOF
+	cp "$LIB_DIR/$arch/"* wineversion/${buildName:5}/lib/
+	tar jcf "$BINARIES_DIR"/$arch/PlayOnLinux-$buildName-$arch.pol *
+	cd "$BINARIES_DIR/$arch/"
+	shasum PlayOnLinux-$buildName-$arch.pol > PlayOnLinux-$buildName-$arch.pol.sha1
+	cd $HOME/winebuild
+	[ "$4" = "noList" ] || POL_WineBuild_BuildList
+}
+
+POL_WineBuild_BuildList()
+{
+	echo "Regenerating lists"
+	cd "$BINARIES_DIR"
+	for arch in *; do
+		cd "$BINARIES_DIR/$arch" 2> /dev/null 
+		if [ "$?" = 0 ]; then
+			echo "Entering $HOME/binaries/$arch"
+			touch ../$arch.lst
+			if [ ! "$(ls)" = "" ]; then
+				for file in *; do
+					if [ ! "$file" = "LIST" ] && [ ! "$file" = "LIST_" ] && [ ! "$(echo $file | awk -F . '{print $NF}')" = "sha1" ]; then
+						version=$(echo "$file"| sed 's/PlayOnMac-wine-//')
+						version=$(echo "$version"| sed 's/PlayOnLinux-wine-//')
+						version=$(echo $version | sed "s/-$arch.pol//")
+						version=$(echo $version | sed "s/-$arch.pom//")
+						echo $file
+						sha1=$(sha1sum $file | cut -d " " -f1)
+						echo "$file;$version;$sha1" >> LIST_
+					fi
+				done
+				mv LIST_ ../$arch.lst
+				python "$WINEBUILD_DIR/python/pSort.py" $BINARIES_DIR/$arch.lst
+			fi
+		fi
+	done
+}
+

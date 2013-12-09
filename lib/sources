@@ -1,0 +1,8 @@
+#!/bin/bash
+
+source "$WINEBUILD_DIR/lib/variables"
+source "$WINEBUILD_DIR/lib/general"
+source "$WINEBUILD_DIR/lib/git"
+source "$WINEBUILD_DIR/lib/wine"
+source "$WINEBUILD_DIR/lib/builders"
+source "$WINEBUILD_DIR/lib/social"

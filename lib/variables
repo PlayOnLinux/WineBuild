@@ -1,0 +1,23 @@
+#!/bin/bash
+
+export WINE_GIT="$HOME/wine-git/"
+export WINE_TOOLS="$HOME/wine-tools/"
+
+
+export BINARIES_DIR="$HOME/binaries/"
+export LOG_DIR="$HOME/logs/"
+export INSTALL_DIR="$HOME/wine/"
+export PATCHES_DIR="$HOME/wine-patches"
+export LIB_DIR="$HOME/wine-libs"
+
+export PATH_ORIG="$PATH"
+
+# Gecko
+gecko_current="$HOME/current_gecko"
+gecko_file="$HOME/wine/gecko/gecko.lst"
+
+# Mono
+mono_current="$HOME/current_mono"
+mono_file="$HOME/wine/mono/mono.lst"
+
+export POL_COOKIES_FILE="$HOME/winebuild/cookies.txt"

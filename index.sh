@@ -1,0 +1,20 @@
+#!/bin/bash
+
+cd "$(dirname $0)"
+export WINEBUILD_DIR="$PWD"
+source "$WINEBUILD_DIR/lib/sources"
+
+[ -e $HOME/build.lock ] && echo "Already running, exiting" && exit
+touch $HOME/build.lock 
+notify "[Winebuild] Winebuild is starting !"
+
+
+POL_Start_Winebuild "linux-x86"
+POL_Start_Winebuild "darwin-x86"
+POL_Start_Winebuild "linux-amd64"
+
+[ "$1" == "--noNews"] || sendNews
+
+rm $HOME/build.lock 
+
+exit 0 
