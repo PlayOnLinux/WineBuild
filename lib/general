@@ -14,7 +14,7 @@ POL_Start_Winebuild()
 		echo "POL_Start_Winebuild : You must choose an architecture"
 	fi
 	
-	
+	POL_WineBuild_GeneralClean	
 	POL_WineBuild_GetTags | while read version
 	do
 		
