@@ -6,9 +6,14 @@ POL_FunctionExists()
 	type "$1" > /dev/null 2> /dev/null
 }
 
-
+POL_Start_UpdateWinePatches()
+{
+	cd "$HOME/wine-patches"
+	git pull
+}
 POL_Start_Winebuild()
 {
+	POL_Start_UpdateWinePatches
 	# 1 : Architecture
 	if [ "$1" = "" ]; then
 		echo "POL_Start_Winebuild : You must choose an architecture"

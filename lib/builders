@@ -1,5 +1,4 @@
 #!/bin/bash
-
 POL_WineBuilder_exists()
 {
 	# Determine if a builder exists
@@ -180,13 +179,16 @@ POL_WineBuilder_make_darwin-x86()
 	./configure
 	
 	notify "[Winebuild] Wine-tools : make depend"
-	make depend || return 102
+	#make depend || return 102
 	
 	notify "[Winebuild] Wine-tools : Updating makefile" 
-	python "$WINEBUILD_DIR/python/updateMakeFile.py"  "$WINE_TOOLS"/tools/winegcc/Makefile || return 103
-	sleep 1
 	
+	#python "$WINEBUILD_DIR/python/updateMakeFile.py"  "$WINE_TOOLS"/tools/winegcc/Makefile || return 103
+	sleep 1
+
 	notify "[Winebuild] Wine-tools : make __tooldeps__"
+	
+	export
 	make __tooldeps__ || return 104
 	
 	
