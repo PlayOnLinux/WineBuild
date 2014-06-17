@@ -1,4 +1,4 @@
-#!/bin/bash
+#/bin/bash
 
 POL_WineBuild_CleanGIT()
 {
@@ -116,8 +116,8 @@ POL_WineBuild_Package()
 
 	notify "[Winebuild $arch] Making package $buildName"
 	rm -rf wineversion/${buildName:5}/include/
-	find -type f -exec strip -s '{}' +
-	mkdir playonlinux files
+	find -type f -exec strip -s '{}' + 2> /dev/null
+	mkdir -p playonlinux files 
 	cat <<EOF > playonlinux/main
 #!/bin/bash
 if [ "\$PLAYONLINUX" = "" ]
@@ -131,7 +131,7 @@ cp -a \$SCRIPT_DIRECTORY/../wineversion/${buildName:5} \$REPERTOIRE/wine/$arch/$
 
 exit
 EOF
-	cp "$LIB_DIR/$arch/"* wineversion/${buildName:5}/lib/
+	[ ! "$4" = "--nolib" ] && cp "$LIB_DIR/$arch/"* wineversion/${buildName:5}/lib/
 	tar jcf "$BINARIES_DIR"/$arch/PlayOnLinux-$buildName-$arch.pol *
 	cd "$BINARIES_DIR/$arch/"
 	shasum PlayOnLinux-$buildName-$arch.pol > PlayOnLinux-$buildName-$arch.pol.sha1

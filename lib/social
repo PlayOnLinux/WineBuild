@@ -88,7 +88,8 @@ fi
 setState()
 {
 	[ "$3" = "" ] || patch="-$3"
-	cat <<EOF > $HOME/state
+	[ "$1" = "ready" ] && patch=""
+	cat << EOF > $HOME/state
 	ARCH=$2
 	VERSION="$1$patch"
 EOF

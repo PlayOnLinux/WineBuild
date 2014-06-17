@@ -1,0 +1,21 @@
+#!/bin/bash
+
+cd "$(dirname $0)"
+export LC_ALL=C
+export WINEBUILD_DIR="$PWD"
+source "$WINEBUILD_DIR/lib/sources"
+
+rba()
+{
+	[ "$1" = "" ] && return
+	cd "$HOME/wine/$1"
+	for file in *;
+	do
+		echo "[$1] Building $file ..." 
+		POL_WineBuild_Package "$file" "" "$1" "noList" > /dev/null	
+	done
+	POL_WineBuild_BuildList	
+}
+
+rba "linux-x86"
+rba "linux-amd64"
