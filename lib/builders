@@ -199,14 +199,14 @@ POL_WineBuilder_make_darwin-x86()
 	
 	cd "$WINE_GIT"
 	notify "[Winebuild] ./configure"
-	./configure --prefix=/ --host=i686-apple-darwin10 --with-wine-tools=$WINE_TOOLS || return 1
+	schroot -c winebuild_darwin-x86 -p -- ./configure --prefix=/ --host=i686-apple-darwin10 --with-wine-tools=$WINE_TOOLS || return 1
 	
 	notify "[Winebuild] make"
-	make || return 2
+	schroot -c winebuild_darwin-x86 -p -- make || return 2
 	
 	notify "[Winebuild] make install"
 	mkdir -p "$CURRENT_BUILD_INSTALL_DIR"
-	make install DESTDIR="$CURRENT_BUILD_INSTALL_DIR" || return 3
+	schroot -c winebuild_darwin-x86 -p -- make install DESTDIR="$CURRENT_BUILD_INSTALL_DIR" || return 3
 
 	return 0
 }
