@@ -193,7 +193,7 @@ POL_WineBuilder_make_darwin-x86()
 	export PATH="/usr/i686-apple-darwin10/bin/:$PATH"
 	export CC="ccache i686-apple-darwin10-gcc"
 	export CFLAGS=" "
-	export LDFLAGS="-m32 -mmacosx-version-min=$FRAMEWORK -isysroot/usr/lib/apple/SDKs/MacOSX$FRAMEWORK.sdk -iframework/usr/lib/apple/SDKs/MacOSX$FRAMEWORK.sdk -F/usr/lib/apple/SDKs/MacOSX$FRAMEWORK.sdk/System/Library/Frameworks -L/usr/lib/apple/SDKs/MacOSX$FRAMEWORK.sdk/usr/lib -L/usr/lib/apple/SDKs/MacOSX$FRAMEWORK.sdk/usr/lib/system  -I/usr/lib/apple/SDKs/MacOSX$FRAMEWORK.sdk/usr/lib/gcc/i686-apple-darwin10/4.0.1/include/ -L/usr/i686-apple-darwin10/local/lib -I/usr/i686-apple-darwin10/local/include -I/usr/lib/apple/SDKs/MacOSX$FRAMEWORK.sdk/usr/X11/include/ -L/usr/lib/apple/SDKs/MacOSX$FRAMEWORK.sdk/usr/X11/lib/ -I/usr/include/freetype2"
+	export LDFLAGS="-m32 -mmacosx-version-min=$FRAMEWORK -isysroot/usr/lib/apple/SDKs/MacOSX$FRAMEWORK.sdk -iframework/usr/lib/apple/SDKs/MacOSX$FRAMEWORK.sdk -F/usr/lib/apple/SDKs/MacOSX$FRAMEWORK.sdk/System/Library/Frameworks -F/usr/lib/apple/SDKs/MacOSX$FRAMEWORK.sdk/Library/Frameworks/OpenCL.framework/ -L/usr/lib/apple/SDKs/MacOSX$FRAMEWORK.sdk/usr/lib -L/usr/lib/apple/SDKs/MacOSX$FRAMEWORK.sdk/usr/lib/system  -I/usr/lib/apple/SDKs/MacOSX$FRAMEWORK.sdk/usr/lib/gcc/i686-apple-darwin10/4.0.1/include/ -L/usr/i686-apple-darwin10/local/lib -I/usr/i686-apple-darwin10/local/include -I/usr/lib/apple/SDKs/MacOSX$FRAMEWORK.sdk/usr/X11/include/ -L/usr/lib/apple/SDKs/MacOSX$FRAMEWORK.sdk/usr/X11/lib/ -I/usr/include/freetype2 -I/usr/lib/apple/SDKs/MacOSX$FRAMEWORK.sdk/usr/include/ -I/usr/lib/apple/SDKs/MacOSX$FRAMEWORK.sdk/usr/include/libxml2 -L/usr/lib/apple/SDKs/MacOSX$FRAMEWORK.sdk/usr/lib/"
 	export CPPFLAGS="$LDFLAGS"
 	
 	
