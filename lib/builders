@@ -166,7 +166,6 @@ POL_WineBuilder_make_darwin-x86()
 	CURRENT_BUILD_INSTALL_DIR="$1"
 	ARCH="darwin-x86"
 	export FRAMEWORK="10.6"
-	
 	export CC="ccache gcc" 
 	
 	if [ "$CURRENT_BUILD_INSTALL_DIR" = "" ]; then
@@ -177,22 +176,14 @@ POL_WineBuilder_make_darwin-x86()
 	cd "$WINE_TOOLS"
 	notify "[Winebuild] Wine-tools : ./configure"
 	./configure
-	
 	notify "[Winebuild] Wine-tools : make depend"
 	#make depend || return 102
-	
-	notify "[Winebuild] Wine-tools : Updating makefile" 
-	
+	notify "[Winebuild] Wine-tools : Updating makefile"	
 	#python "$WINEBUILD_DIR/python/updateMakeFile.py"  "$WINE_TOOLS"/tools/winegcc/Makefile || return 103
-	sleep 1
-
+	sleep 2
 	notify "[Winebuild] Wine-tools : make __tooldeps__"
-	
 	export
-	make __tooldeps__ || return 104
-	
-	
-	
+	make __tooldeps__ || return 104	
 	sleep 2
 	notify "[Winebuild] Tools are built"
 	sleep 2
@@ -218,4 +209,59 @@ POL_WineBuilder_make_darwin-x86()
 	make install DESTDIR="$CURRENT_BUILD_INSTALL_DIR" || return 3
 
 	return 0
+}
+
+
+POL_WineBuilder_freebsd-x86()
+{       
+        POL_WineBuilder "$1" "$2" "freebsd-x86"
+}
+
+POL_WineBuilder_make_freebsd-x86()
+{
+        POL_WineBuilder_CleanEnv
+        CURRENT_BUILD_INSTALL_DIR="$1"
+        ARCH="freebsd-x86"
+        
+	export CC="ccache gcc"
+
+        if [ "$CURRENT_BUILD_INSTALL_DIR" = "" ]; then
+                echo "CURRENT_BUILD_INSTALL_DIR not set."
+                return 254
+        fi 
+                
+        cd "$WINE_TOOLS"
+        notify "[Winebuild] Wine-tools : ./configure"
+        ./configure
+        notify "[Winebuild] Wine-tools : make __tooldeps__"     
+        export
+        make __tooldeps__ || return 104
+        sleep 2
+        notify "[Winebuild] Tools are built"
+        sleep 2
+
+
+	#export LDFLAGS="-L/usr/cross-freebsd/i386-pc-freebsd7/lib -L/usr/cross-freebsd/i386-pc-freebsd7/lib/X11 -I/usr/cross-freebsd/i386-pc-freebsd7/include/ -I/usr/cross-freebsd/i386-pc-freebsd7/include/X11 -I/usr/cross-freebsd/i386-pc-freebsd7/include/freetype2 -I/usr/cross-freebsd/i386-pc-freebsd7/include/freetype2/freetype"
+	export LDFLAGS="-L/usr/cross-freebsd/i386-pc-freebsd7/lib -L/usr/cross-freebsd/i386-pc-freebsd7/lib/X11 -I/usr/cross-freebsd/i386-pc-freebsd7/include/ -I/usr/cross-freebsd/i386-pc-freebsd7/include/X11 -I/usr/cross-freebsd/i386-pc-freebsd7/include/freetype2 -I/usr/cross-freebsd/i386-pc-freebsd7/include/freetype2/freetype -L/usr/cross-freebsd/lib -I/usr/cross-freebsd/include"
+
+	export CPPFLAGS="$LDFLAGS"
+	export CFLAGS="$LDFLAGS"
+	export PATH="/usr/cross-freebsd/bin:$PATH"
+	export LD_LIBRARY_PATH="/usr/cross-freebsd/lib"
+	export LD_RUN_PATH="/usr/cross-freebsd/i386-pc-freebsd7/lib"
+	export CC="ccache i386-pc-freebsd7-gcc-4.9.0"
+
+	cd "$WINE_GIT"
+
+	
+	notify "[Winebuild] ./configure"
+	schroot -c winebuild_freebsd-x86 -p -- env LD_RUN_PATH="/usr/cross-freebsd/i386-pc-freebsd7/lib" LD_LIBRARY_PATH="/usr/cross-freebsd/lib" ./configure --prefix=/ --host=i386-pc-freebsd7 --with-wine-tools=$WINE_TOOLS || return 1
+	
+	notify "[Winebuild] make"
+	schroot -c winebuild_freebsd-x86 -p -- env LD_RUN_PATH="/usr/cross-freebsd/i386-pc-freebsd7/lib" LD_LIBRARY_PATH="/usr/cross-freebsd/lib" make -j 4 || return 2
+
+	notify "[Winebuild] make install"
+	mkdir -p "$CURRENT_BUILD_INSTALL_DIR"
+        schroot -c winebuild_freebsd-x86 -p -- make install DESTDIR="$CURRENT_BUILD_INSTALL_DIR" || return 3
+
 }

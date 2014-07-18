@@ -27,10 +27,10 @@ POL_WineBuild_GeneralClean()
 POL_WineBuild_GetTags()
 {
 	cd "$WINE_GIT"
-	git tag | grep "wine-1.2"
-	git tag | grep "wine-1.3"
-	git tag | grep "wine-1.4"
-	git tag | grep "wine-1.5"
+	#git tag | grep "wine-1.2"
+	#git tag | grep "wine-1.3"
+	#git tag | grep "wine-1.4"
+	#git tag | grep "wine-1.5"
 	git tag | grep "wine-1.6"
 	git tag | grep "wine-1.7"
 }
@@ -116,7 +116,7 @@ POL_WineBuild_Package()
 
 	notify "[Winebuild $arch] Making package $buildName"
 	rm -rf wineversion/${buildName:5}/include/
-	find -type f -exec strip -s '{}' + 2> /dev/null
+	[ ! "$arch" = "freebsd-x86" ] && find -type f -exec strip -s '{}' + 2> /dev/null
 	mkdir -p playonlinux files 
 	cat <<EOF > playonlinux/main
 #!/bin/bash
