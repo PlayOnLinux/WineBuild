@@ -68,7 +68,9 @@ POL_WineBuilder_make_linux-x86()
 		echo "CURRENT_BUILD_INSTALL_DIR not set."
 		return 254
 	fi
-	export CC="ccache gcc-4.4 -m32" 
+	export CC="ccache gcc -m32" 
+	export CFLAGS="-O3 -pipe -fno-strict-aliasing -fomit-frame-pointer -ffunction-sections -fdata-sections -maccumulate-outgoing-args -mno-push-args -freorder-blocks-and-partition"
+
 	#LDFLAGS="-m32 -L/lib32 -L/usr/lib32 -Wl,-rpath,/lib32 -Wl,-rpath,/usr/lib32"
 	cd "$WINE_GIT"
 	
@@ -192,7 +194,7 @@ POL_WineBuilder_make_darwin-x86()
 	
 	export PATH="/usr/i686-apple-darwin10/bin/:$PATH"
 	export CC="ccache i686-apple-darwin10-gcc"
-	export CFLAGS=" "
+	export CFLAGS="-O3 -pipe -fno-strict-aliasing -fomit-frame-pointer -ffunction-sections -fdata-sections -maccumulate-outgoing-args -mno-push-args -freorder-blocks-and-partition"
 	export LDFLAGS="-m32 -mmacosx-version-min=$FRAMEWORK -isysroot/usr/lib/apple/SDKs/MacOSX$FRAMEWORK.sdk -iframework/usr/lib/apple/SDKs/MacOSX$FRAMEWORK.sdk -F/usr/lib/apple/SDKs/MacOSX$FRAMEWORK.sdk/System/Library/Frameworks -F/usr/lib/apple/SDKs/MacOSX$FRAMEWORK.sdk/Library/Frameworks/OpenCL.framework/ -L/usr/lib/apple/SDKs/MacOSX$FRAMEWORK.sdk/usr/lib -L/usr/lib/apple/SDKs/MacOSX$FRAMEWORK.sdk/usr/lib/system  -I/usr/lib/apple/SDKs/MacOSX$FRAMEWORK.sdk/usr/lib/gcc/i686-apple-darwin10/4.0.1/include/ -L/usr/i686-apple-darwin10/local/lib -I/usr/i686-apple-darwin10/local/include -I/usr/lib/apple/SDKs/MacOSX$FRAMEWORK.sdk/usr/X11/include/ -L/usr/lib/apple/SDKs/MacOSX$FRAMEWORK.sdk/usr/X11/lib/ -I/usr/include/freetype2 -I/usr/lib/apple/SDKs/MacOSX$FRAMEWORK.sdk/usr/include/ -I/usr/lib/apple/SDKs/MacOSX$FRAMEWORK.sdk/usr/include/libxml2 -L/usr/lib/apple/SDKs/MacOSX$FRAMEWORK.sdk/usr/lib/"
 	export CPPFLAGS="$LDFLAGS"
 	
