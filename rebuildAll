@@ -9,11 +9,16 @@ rba()
 {
 	[ "$1" = "" ] && return
 	cd "$HOME/wine/$1"
-	for file in *;
+	for file in wine-1.7*;
 	do
 		echo "[$1] Building $file ..." 
 		POL_WineBuild_Package "$file" "" "$1" "noList" > /dev/null	
 	done
+	for file in wine-1.6*;
+        do
+                echo "[$1] Building $file ..."
+                POL_WineBuild_Package "$file" "" "$1" "noList" > /dev/null      
+        done
 	POL_WineBuild_BuildList	
 }
 

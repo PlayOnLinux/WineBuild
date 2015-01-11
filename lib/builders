@@ -69,16 +69,16 @@ POL_WineBuilder_make_linux-x86()
 		return 254
 	fi
 	export CC="ccache gcc -m32" 
-	export CFLAGS="-O3 -pipe -fno-strict-aliasing -fomit-frame-pointer -ffunction-sections -fdata-sections -maccumulate-outgoing-args -mno-push-args -freorder-blocks-and-partition"
+	# export CFLAGS="-O3 -pipe -fno-strict-aliasing -fomit-frame-pointer -ffunction-sections -fdata-sections -maccumulate-outgoing-args -mno-push-args -freorder-blocks-and-partition"
 
-	#LDFLAGS="-m32 -L/lib32 -L/usr/lib32 -Wl,-rpath,/lib32 -Wl,-rpath,/usr/lib32"
+	LDFLAGS="-m32 -L/lib32 -L/usr/lib32 -Wl,-rpath,/lib32 -Wl,-rpath,/usr/lib32"
 	cd "$WINE_GIT"
 	
 	notify "[Winebuild] ./configure"
-	./configure --prefix=/ || return 1
+	schroot -c winebuild_linux-x86 -p -- ./configure --prefix=/ || return 1
 	
 	notify "[Winebuild] make"
-	make -j 4 || return 2
+	schroot -c winebuild_linux-x86 -p -- make -j 4 || return 2
 	
 	notify "[Winebuild] make install"
 	mkdir -p "$CURRENT_BUILD_INSTALL_DIR"
@@ -108,6 +108,7 @@ POL_WineBuilder_make_linux-amd64()
 		return 254
 	fi
 	export CC="ccache gcc"
+	export CFLAGS="-O3 -pipe -fno-strict-aliasing -fomit-frame-pointer -ffunction-sections -fdata-sections -maccumulate-outgoing-args -mno-push-args -freorder-blocks-and-partition"
 	
 	#LDFLAGS="-m32 -L/lib32 -L/usr/lib32 -Wl,-rpath,/lib32 -Wl,-rpath,/usr/lib32"
 	cd "$WINE_GIT"

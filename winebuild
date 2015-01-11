@@ -12,10 +12,10 @@ notify "[Winebuild] Winebuild is starting !"
 
 POL_Start_Winebuild "linux-x86"
 POL_Start_Winebuild "darwin-x86"
-POL_Start_Wienbuild "freebsd-x86"
+#POL_Start_Winebuild "freebsd-x86"
 POL_Start_Winebuild "linux-amd64"
 
-[ "$1" == "--noNews" ] || sendNews
+#[ "$1" == "--noNews" ] || sendNews
 
 rm $HOME/build.lock 
 
