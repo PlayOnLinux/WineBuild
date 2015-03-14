@@ -128,12 +128,12 @@ POL_WineBuilder_make_linux-amd64()
 	
 	## 32 BITS part
 	# LDFLAGS="-m32 -L/lib32 -L/usr/lib32 -Wl,-rpath,/lib32 -Wl,-rpath,/usr/lib32"
-	cd pol_x86
 	notify "[Winebuild] ./configure 32 bits"
-	../configure --host=x86_64-linux-gnu --build=x86_64-linux-gnu --prefix=/ --with-wine64=../pol_amd64 || return 3
+	cd pol_x86
+	schroot -c winebuild_linux-amd64-build86part -p -- ../configure --host=x86_64-linux-gnu --build=x86_64-linux-gnu --prefix=/ --with-wine64=$PWD/../pol_amd64 || return 3
 	
 	notify "[Winebuild] make 32 bits"
-	make -j 4 || return 4
+	schroot -c winebuild_linux-amd64-build86part -p -- make -j 4 || return 4
 	cd ..
 	
 	
@@ -145,7 +145,7 @@ POL_WineBuilder_make_linux-amd64()
 	
 	cd pol_x86
 	notify "[Winebuild] make install 32 bits"
-	make install DESTDIR="$CURRENT_BUILD_INSTALL_DIR" || return 6
+	schroot -c winebuild_linux-amd64-build86part -p -- make install DESTDIR="$CURRENT_BUILD_INSTALL_DIR" || return 6
 	
 	
 	

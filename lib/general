@@ -22,7 +22,7 @@ POL_Start_Winebuild()
 	POL_WineBuild_GeneralClean	
 	POL_WineBuild_GetTags | while read version
 	do
-		
+		export BUILDING_VERSION="${version:5}"
 		[ -e "$BINARIES_DIR"/$1/PlayOnLinux-$version-$1.pol ] && continue
 		cVer=${version:5}
 		POL_WineBuild_appendGecko "$cVer"
@@ -37,6 +37,20 @@ POL_Start_Winebuild()
 			
 			POL_WineBuild_GeneralClean
 		fi
+		
+		if [ -e "$HOME/wine-patches/custom/applyEachTime_$1.lst" ]; then
+			while read patchname
+			do
+				[ -e  "$BINARIES_DIR"/$1/PlayOnLinux-$version-$patchname-$1.pol ] && continue
+				notify "[Winebuild $1] Building wine $version $patchname (each time patch)"
+				sleep 2	
+				POL_WineBuilder_"$1" "$version" "$patchname" > "$LOG_DIR"/$1/$version-$patchname-$1.log 2> "$LOG_DIR"/$1/$version-$patchname-$1.err
+				notify "[Winebuild $1] Exit code : $?"
+		
+				POL_WineBuild_GeneralClean
+
+			done < "$HOME/wine-patches/custom/applyEachTime_$1.lst"
+		fi
 	done
 	
 	
@@ -45,6 +59,7 @@ POL_Start_Winebuild()
 	do
 		version="$(echo $line | awk '{print $1}')"
 		patchname="$(echo $line | awk '{print $2}')"
+		export BUILDING_VERSION="${version:5}"
 		[ -e  "$BINARIES_DIR"/$1/PlayOnLinux-$version-$patchname-$1.pol ] && continue
 		notify "[Winebuild $1] Building wine $version $patchname"
 		sleep 2	

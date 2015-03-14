@@ -6,6 +6,6 @@ fi
 
 source "$PLAYONLINUX/lib/sources" 
 
-cp -a $SCRIPT_DIRECTORY/../wineversion/1.6* $REPERTOIRE/wine/linux-amd64/1.6*
+cp -a $SCRIPT_DIRECTORY/../wineversion/4-LeagueOfLegendsCSMT-amd64 $REPERTOIRE/wine//4-LeagueOfLegendsCSMT-amd64
 
 exit

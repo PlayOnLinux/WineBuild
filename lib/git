@@ -42,6 +42,14 @@ POL_WineBuild_applyPatch()
 	
     cd "$1"
 
+	echo "set PATCH_DIR=$2"
+	export PATCH_DIR="$2"
+    if [ -e "$2/before.cfg" ]; then
+            echo "Running $2/before.cfg"
+            bash $2/before.cfg || return 1 
+            echo "Done."
+    fi
+	
     for file in "$2/"*".patch"
     do
         echo "[PATCH] Patching custom: $file"
@@ -90,13 +98,13 @@ POL_WineBuild_applyAllPatch()
 	all_dir="$PATCHES_DIR/$3/all"
 	custom_dir="$PATCHES_DIR/custom/$customName"
 
-	POL_WineBuild_applyPatch "$WINE_GIT" "$build_dir"
-	POL_WineBuild_applyPatch "$WINE_GIT" "$all_dir"
-	[ "$customName" = "" ] || POL_WineBuild_applyPatch "$WINE_GIT" "$custom_dir"
+	POL_WineBuild_applyPatch "$WINE_GIT" "$build_dir" || return 1
+	POL_WineBuild_applyPatch "$WINE_GIT" "$all_dir" || return 1
+	[ "$customName" = "" ] || POL_WineBuild_applyPatch "$WINE_GIT" "$custom_dir" || return 1
 	
-	POL_WineBuild_applyPatch "$WINE_TOOLS" "$build_dir"
-	POL_WineBuild_applyPatch "$WINE_TOOLS" "$all_dir"
-	[ "$customName" = "" 	] || POL_WineBuild_applyPatch "$WINE_TOOLS" "$custom_dir"
+	POL_WineBuild_applyPatch "$WINE_TOOLS" "$build_dir" || return 1
+	POL_WineBuild_applyPatch "$WINE_TOOLS" "$all_dir" || return 1
+	[ "$customName" = "" 	] || POL_WineBuild_applyPatch "$WINE_TOOLS" "$custom_dir" || return 1
 	
 	return 0
 
@@ -131,7 +139,12 @@ cp -a \$SCRIPT_DIRECTORY/../wineversion/${buildName:5} \$REPERTOIRE/wine/$arch/$
 
 exit
 EOF
-	[ ! "$4" = "--nolib" ] && cp "$LIB_DIR/$arch/"* wineversion/${buildName:5}/lib/
+	mkdir -p wineversion/${buildName:5}/lib64/
+	mkdir -p wineversion/${buildName:5}/lib/
+	
+	[ ! "$4" = "--nolib" ] && cp "$LIB_DIR/$arch/lib/"* wineversion/${buildName:5}/lib/
+	[ ! "$4" = "--nolib" ] && cp "$LIB_DIR/$arch/lib64/"* wineversion/${buildName:5}/lib64/
+	
 	tar jcf "$BINARIES_DIR"/$arch/PlayOnLinux-$buildName-$arch.pol *
 	cd "$BINARIES_DIR/$arch/"
 	shasum PlayOnLinux-$buildName-$arch.pol > PlayOnLinux-$buildName-$arch.pol.sha1

@@ -22,5 +22,5 @@ rba()
 	POL_WineBuild_BuildList	
 }
 
-rba "linux-x86"
+# rba "linux-x86"
 rba "linux-amd64"
