@@ -37,6 +37,13 @@ POL_Start_Winebuild()
 			
 			POL_WineBuild_GeneralClean
 		fi
+	done 
+	
+	POL_WineBuild_GeneralClean
+	POL_WineBuild_GetTags --eachTimes | while read version
+	do
+		export BUILDING_VERSION="${version:5}"
+		cVer=${version:5}
 		
 		if [ -e "$HOME/wine-patches/custom/applyEachTime_$1.lst" ]; then
 			while read patchname
