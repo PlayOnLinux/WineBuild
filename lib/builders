@@ -42,7 +42,7 @@ POL_WineBuilder()
 	POL_WineBuilder_make_$ARCH "$INSTALL_DIR/$ARCH/$buildName/wineversion/${buildName:5}" || return $?
 
 	POL_WineBuild_Package "$1" "$2" "$ARCH"
-
+	POL_WineBuild_PackageForPhoenicis "$buildName" "$ARCH"
 
 	echo "[$ARCH] END PACKAGE AT: $(date -R)"
 	setState "ready"
@@ -178,7 +178,7 @@ POL_WineBuilder_make_darwin-x86()
 
 	cd "$WINE_TOOLS"
 	notify "[Winebuild] Wine-tools : ./configure"
-	./configure
+	schroot -c winebuild_linux-x86 -p -- ./configure
 	notify "[Winebuild] Wine-tools : make depend"
 	#make depend || return 102
 	notify "[Winebuild] Wine-tools : Updating makefile"	
@@ -186,30 +186,39 @@ POL_WineBuilder_make_darwin-x86()
 	sleep 2
 	notify "[Winebuild] Wine-tools : make __tooldeps__"
 	export
-	make __tooldeps__ || return 104	
+	schroot -c winebuild_linux-x86 -p -- make __tooldeps__ -j 4 || return 104	
 	sleep 2
-	notify "[Winebuild] Tools are built"
+	notify "[Winebuild] Tools are built"	
 	sleep 2
 	notify "[Winebuild] Setting Mac OS $FRAMEWORK cross building framework"
 	sleep 2
 	
-	export PATH="/usr/i686-apple-darwin10/bin/:$PATH"
-	export CC="ccache i686-apple-darwin10-gcc"
-	export CFLAGS="-O3 -pipe -fno-strict-aliasing -fomit-frame-pointer -ffunction-sections -fdata-sections -maccumulate-outgoing-args -mno-push-args -freorder-blocks-and-partition"
-	export LDFLAGS="-m32 -mmacosx-version-min=$FRAMEWORK -isysroot/usr/lib/apple/SDKs/MacOSX$FRAMEWORK.sdk -iframework/usr/lib/apple/SDKs/MacOSX$FRAMEWORK.sdk -F/usr/lib/apple/SDKs/MacOSX$FRAMEWORK.sdk/System/Library/Frameworks -F/usr/lib/apple/SDKs/MacOSX$FRAMEWORK.sdk/Library/Frameworks/OpenCL.framework/ -L/usr/lib/apple/SDKs/MacOSX$FRAMEWORK.sdk/usr/lib -L/usr/lib/apple/SDKs/MacOSX$FRAMEWORK.sdk/usr/lib/system  -I/usr/lib/apple/SDKs/MacOSX$FRAMEWORK.sdk/usr/lib/gcc/i686-apple-darwin10/4.0.1/include/ -L/usr/i686-apple-darwin10/local/lib -I/usr/i686-apple-darwin10/local/include -I/usr/lib/apple/SDKs/MacOSX$FRAMEWORK.sdk/usr/X11/include/ -L/usr/lib/apple/SDKs/MacOSX$FRAMEWORK.sdk/usr/X11/lib/ -I/usr/include/freetype2 -I/usr/lib/apple/SDKs/MacOSX$FRAMEWORK.sdk/usr/include/ -I/usr/lib/apple/SDKs/MacOSX$FRAMEWORK.sdk/usr/include/libxml2 -L/usr/lib/apple/SDKs/MacOSX$FRAMEWORK.sdk/usr/lib/"
-	export CPPFLAGS="$LDFLAGS"
+	export CC="ccache clang -target i686-apple-darwin12 -mlinker-version=0.0 -mmacosx-version-min=$FRAMEWORK  -isysroot/usr/lib/apple/SDKs/MacOSX$FRAMEWORK.sdk"
+	export OSX_ROOTFS="/usr/lib/apple/SDKs/MacOSX$FRAMEWORK.sdk/" 
+	
+	
+	
+	#export CFLAGS=""
+	#export LDFLAGS="-m32 -mmacosx-version-min=$FRAMEWORK -isysroot/usr/lib/apple/SDKs/MacOSX$FRAMEWORK.sdk -iframework/usr/lib/apple/SDKs/MacOSX$FRAMEWORK.sdk -F/usr/lib/apple/SDKs/MacOSX$FRAMEWORK.sdk/System/Library/Frameworks -F/usr/lib/apple/SDKs/MacOSX$FRAMEWORK.sdk/Library/Frameworks/OpenCL.framework/ -L/usr/lib/apple/SDKs/MacOSX$FRAMEWORK.sdk/usr/lib -L/usr/lib/apple/SDKs/MacOSX$FRAMEWORK.sdk/usr/lib/system  -I/usr/i686-apple-darwin10/local/include -I/usr/lib/apple/SDKs/MacOSX$FRAMEWORK.sdk/usr/X11/include/ -L/usr/lib/apple/SDKs/MacOSX$FRAMEWORK.sdk/usr/X11/lib/ -I/usr/include/freetype2 -I/usr/lib/apple/SDKs/MacOSX$FRAMEWORK.sdk/usr/include/ -I/usr/lib/apple/SDKs/MacOSX$FRAMEWORK.sdk/usr/include/libxml2 -L/usr/lib/apple/SDKs/MacOSX$FRAMEWORK.sdk/usr/lib/"
+	#export CPPFLAGS="$LDFLAGS"
 	
 	
 	cd "$WINE_GIT"
 	notify "[Winebuild] ./configure"
-	schroot -c winebuild_darwin-x86 -p -- ./configure --prefix=/ --host=i686-apple-darwin10 --with-wine-tools=$WINE_TOOLS || return 1
+	schroot -c winebuild_darwin-x86-llvm -p -- ./configure --host i686-apple-darwin12 --with-wine-tools=$PWD/../wine-tools --prefix=/ \
+--x-includes="$OSX_ROOTFS/usr/X11/include/" --x-libraries="$OSX_ROOTFS/usr/X11/lib/" \
+CFLAGS="-I$OSX_ROOTFS/usr/X11/include/ -I$OSX_ROOTFS/usr/X11/include/freetype2 -I/usr/i686-apple-darwin10/local/include -I/usr/lib/apple/SDKs/MacOSX$FRAMEWORK.sdk/usr/include/libxml2" \
+LDFLAGS="-L$OSX_ROOTFS/usr/X11/lib/ -Wl,-rpath,/opt/x11/lib"
+
+
+	#schroot -c winebuild_darwin-x86 -p -- ./configure --prefix=/ --host=i686-apple-darwin12 --with-wine-tools=$WINE_TOOLS || return 1
 	
 	notify "[Winebuild] make"
-	schroot -c winebuild_darwin-x86 -p -- make || return 2
+	schroot -c winebuild_darwin-x86-llvm -p -- make -j 4|| return 2
 	
 	notify "[Winebuild] make install"
 	mkdir -p "$CURRENT_BUILD_INSTALL_DIR"
-	schroot -c winebuild_darwin-x86 -p -- make install DESTDIR="$CURRENT_BUILD_INSTALL_DIR" || return 3
+	schroot -c winebuild_darwin-x86-llvm -p -- make install DESTDIR="$CURRENT_BUILD_INSTALL_DIR" || return 3
 
 	return 0
 }

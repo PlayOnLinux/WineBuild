@@ -69,7 +69,7 @@ POL_WineBuild_applyPatch()
 				patched="true"
 			else
 				echo "[PATCH] patch_level : $level"
-				patch -p$level < "$file" 
+				patch -N -p$level < "$file" 
 				patched="true"
 			fi
 		else
@@ -185,3 +185,47 @@ POL_WineBuild_BuildList()
 	done
 }
 
+POL_WineBuild_PackageForPhoenicis()
+{
+	cd "$BINARIES_DIR"
+	arch="$2"
+	buildName="$1"
+
+	if grep -q "\-staging" <<< "$buildName"; then
+		distributionCodename="staging-$arch"
+		packageName="${buildName/-staging/}"
+	else
+		distributionCodename="upstream-$arch"
+		packageName="$buildName"
+	fi
+	
+
+	notify "[Winebuild $arch] Making package $distributionCodename/$packageName for phoenicis"
+	echo "[Winebuild $arch] Making package $distributionCodename/$packageName for phoenicis"
+
+	cd "$INSTALL_DIR/$arch/$buildName/wineversion/${buildName:5}"
+ 
+	[ ! "$4" = "--nolib" ] && cp "$LIB_DIR/$arch/lib/"* lib/ 2> /dev/null
+	[ ! "$4" = "--nolib" ] && cp "$LIB_DIR/$arch/lib64/"* lib64/ 2> /dev/null
+	
+	mkdir -p "$BINARIES_DIR/phoenicis/$distributionCodename/"
+	tar jcf "$BINARIES_DIR/phoenicis/$distributionCodename/PlayOnLinux-$packageName-$distributionCodename.tar.gz" *
+	cd "$BINARIES_DIR/phoenicis/$distributionCodename/"
+	shasum PlayOnLinux-$packageName-$distributionCodename.tar.gz > PlayOnLinux-$packageName-$distributionCodename.tar.gz.sha1
+}
+
+
+POL_WineBuild_rebuildAllPackageForPhoenicis() {
+	## ARCH
+	[ "$1" = "" ] && return 
+	workDirectory="$INSTALL_DIR/$1"
+	
+	for file in *; do
+		cd "$workDirectory" 
+		
+		echo "Packaging $file/$1"
+		POL_WineBuild_PackageForPhoenicis "$file" "$1"
+		
+		cd "$workDirectory"
+	done
+}

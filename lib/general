@@ -40,7 +40,7 @@ POL_Start_Winebuild()
 	done 
 	
 	POL_WineBuild_GeneralClean
-	POL_WineBuild_GetTags --eachTimes | while read version
+	POL_WineBuild_GetTags --eachTimePatchesTag | while read version
 	do
 		export BUILDING_VERSION="${version:5}"
 		cVer=${version:5}
@@ -83,5 +83,5 @@ POL_Start_Winebuild()
 notify()
 {
 	# Send message to IRC
-	send-to-irc playonlinux-staff "$1"
+	send-to-irc playonlinux-log "$1"
 }
