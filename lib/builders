@@ -82,7 +82,7 @@ POL_WineBuilder_make_linux-x86()
 	
 	notify "[Winebuild] make install"
 	mkdir -p "$CURRENT_BUILD_INSTALL_DIR"
-	make install DESTDIR="$CURRENT_BUILD_INSTALL_DIR" || return 3
+	schroot -c winebuild_linux-x86 -p -- make install DESTDIR="$CURRENT_BUILD_INSTALL_DIR" || return 3
 
 	return 0
 }
